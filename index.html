@@ -80,6 +80,29 @@
       }
     }
 
+    function handleAddGoal (name, cb) {
+      return (dispatch) => {
+        return API.saveGoal(name)
+          .then((goal) => {
+            dispatch(addGoalAction(goal))
+            cb()
+          })
+          .catch(() => alert('There was an error. Try again.'))
+      }
+    }
+
+    function handleDeleteGoal (goal) {
+      return (dispatch) => {
+        dispatch(removeGoalAction(goal.id))
+
+        return API.deleteGoal(goal.id)
+          .catch(() => {
+            dispatch(addGoalAction(goal))
+            alert('An error occurred. Try again.')
+          })
+      }
+    }
+
     function todos (state = [], action) {
       switch(action.type) {
         case ADD_TODO :
@@ -221,22 +244,13 @@
     class Goals extends React.Component {
       addItem = (e) => {
         e.preventDefault()
-
-        return API.saveGoal(this.input.value)
-          .then((goal) => {
-            this.props.store.dispatch(addGoalAction(goal))
-            this.input.value = ''
-          })
-          .catch(() => alert('There was an error. Try again.'))
+        this.props.store.dispatch(handleAddGoal(
+          this.input.value,
+          () => this.input.value = ''
+        ))
       }
       removeItem = (goal) => {
-        this.props.store.dispatch(removeGoalAction(goal.id))
-
-        return API.deleteGoal(goal.id)
-          .catch(() => {
-            this.props.store.dispatch(addGoalAction(goal))
-            alert('An error occurred. Try again.')
-          })
+        this.props.store.dispatch(handleDeleteGoal(goal))
       }
       render() {
         return (
